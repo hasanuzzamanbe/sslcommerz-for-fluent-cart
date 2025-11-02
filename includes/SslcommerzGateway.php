@@ -8,6 +8,7 @@ use FluentCart\App\Models\OrderTransaction;
 use FluentCart\Framework\Support\Arr;
 use FluentCart\App\Services\Payments\PaymentInstance;
 use FluentCart\App\Modules\PaymentMethods\Core\AbstractPaymentGateway;
+use SslcommerzFluentCart\API\SslcommerzAPI;
 
 class SslcommerzGateway extends AbstractPaymentGateway
 {
@@ -55,6 +56,10 @@ class SslcommerzGateway extends AbstractPaymentGateway
         add_filter('fluent_cart/payment_methods/sslcommerz_settings', [$this, 'getSettings'], 10, 2);
 
         (new Confirmations\SslcommerzConfirmations())->init();
+
+        // Register AJAX endpoint for modal checkout initialization
+        add_action('wp_ajax_sslcommerz_init_modal', [$this, 'initModalPayment']);
+        add_action('wp_ajax_nopriv_sslcommerz_init_modal', [$this, 'initModalPayment']);
     }
 
     public function makePaymentFromPaymentInstance(PaymentInstance $paymentInstance)
@@ -176,11 +181,129 @@ class SslcommerzGateway extends AbstractPaymentGateway
             );
         }
 
-        // SSL Commerz requires manual refund processing through their dashboard
-        return new \WP_Error(
-            'sslcommerz_refund_manual',
-            __('SSL Commerz refunds must be processed manually through the SSL Commerz dashboard.', 'sslcommerz-for-fluent-cart')
+        // Get vendor charge ID (val_id)
+        $valId = $transaction->vendor_charge_id;
+        if (!$valId) {
+            return new \WP_Error(
+                'sslcommerz_refund_error',
+                __('Transaction validation ID is missing.', 'sslcommerz-for-fluent-cart')
+            );
+        }
+
+        // Get payment mode
+        $mode = $this->settings->getMode();
+        
+        // Initialize API instance
+        $api = new SslcommerzAPI();
+
+        // Get bank transaction ID from meta
+        $sslcommerzResponse = Arr::get($transaction->meta, 'sslcommerz_response', []);
+        $bankTranId = Arr::get($sslcommerzResponse, 'bank_tran_id');
+
+        // If bank_tran_id is not in meta, fetch it via validation API
+        if (!$bankTranId) {
+            $validationResponse = $api->validation($valId, $mode);
+
+            if (is_wp_error($validationResponse)) {
+                return new \WP_Error(
+                    'sslcommerz_refund_error',
+                    sprintf(__('Failed to fetch transaction details: %s', 'sslcommerz-for-fluent-cart'), $validationResponse->get_error_message())
+                );
+            }
+
+            $bankTranId = Arr::get($validationResponse, 'bank_tran_id');
+            
+            if (!$bankTranId) {
+                return new \WP_Error(
+                    'sslcommerz_refund_error',
+                    __('Bank transaction ID not found. Unable to process refund.', 'sslcommerz-for-fluent-cart')
+                );
+            }
+        }
+
+        // Generate unique refund transaction ID
+        $refundTransId = 'REF_' . $transaction->id . '_' . time();
+
+        // Convert amount from cents to decimal
+        $currency = $transaction->currency ?? 'BDT';
+        $zeroDecimalCurrencies = ['JPY'];
+        
+        if (in_array(strtoupper($currency), $zeroDecimalCurrencies)) {
+            $refundAmountDecimal = floatval($amount);
+        } else {
+            $refundAmountDecimal = floatval($amount) / 100;
+        }
+
+        // Get refund remarks from args, with fallback
+        $refundRemarks = Arr::get($args, 'reason', 'Refunded on Customer Request');
+        if (empty($refundRemarks)) {
+            $refundRemarks = 'Refunded on Customer Request';
+        }
+
+        // Limit remarks to 255 characters as per API requirement
+        $refundRemarks = substr($refundRemarks, 0, 255);
+
+        // Optional reference ID
+        $refeId = Arr::get($args, 'refe_id', '');
+
+        // Call refund API
+        $refundResponse = $api->initiateRefund(
+            $bankTranId,
+            $refundTransId,
+            $refundAmountDecimal,
+            $refundRemarks,
+            $mode,
+            $refeId
         );
+
+        if (is_wp_error($refundResponse)) {
+            return $refundResponse;
+        }
+
+        // Check API connection status
+        $apiConnect = Arr::get($refundResponse, 'APIConnect', '');
+        
+        if ($apiConnect !== 'DONE') {
+            $errorReason = Arr::get($refundResponse, 'errorReason', '');
+            $errorMessage = sprintf(
+                __('SSL Commerz API connection failed: %s', 'sslcommerz-for-fluent-cart'),
+                $apiConnect
+            );
+            
+            if ($errorReason) {
+                $errorMessage .= ' - ' . $errorReason;
+            }
+            
+            return new \WP_Error(
+                'sslcommerz_refund_error',
+                $errorMessage
+            );
+        }
+
+        // Check refund status
+        $refundStatus = Arr::get($refundResponse, 'status', '');
+        $refundRefId = Arr::get($refundResponse, 'refund_ref_id', '');
+
+        if ($refundStatus === 'success' && $refundRefId) {
+            // Refund initiated successfully
+            return $refundRefId;
+        } elseif ($refundStatus === 'processing') {
+            // Refund already initiated - return the refund_ref_id if available
+            if ($refundRefId) {
+                return $refundRefId;
+            }
+            return new \WP_Error(
+                'sslcommerz_refund_processing',
+                __('Refund is already being processed.', 'sslcommerz-for-fluent-cart')
+            );
+        } else {
+            // Refund failed
+            $errorReason = Arr::get($refundResponse, 'errorReason', __('Refund request failed to initiate.', 'sslcommerz-for-fluent-cart'));
+            return new \WP_Error(
+                'sslcommerz_refund_failed',
+                sprintf(__('Refund failed: %s', 'sslcommerz-for-fluent-cart'), $errorReason)
+            );
+        }
     }
 
     public function fields(): array
@@ -293,6 +416,90 @@ class SslcommerzGateway extends AbstractPaymentGateway
         }
 
         return $data;
+    }
+
+    /**
+     * Initialize modal payment for SSL Commerz popup checkout
+     * This endpoint is called by the SSL Commerz embed script
+     */
+    public function initModalPayment()
+    {
+        // Get order hash or transaction ID from request
+        $orderHash = Arr::get($_REQUEST, 'order_hash', '');
+        $transactionId = Arr::get($_REQUEST, 'transaction_id', '');
+        
+        if (!$orderHash && !$transactionId) {
+            wp_send_json([
+                'status' => 'fail',
+                'data' => null,
+                'message' => __('Order information not found.', 'sslcommerz-for-fluent-cart')
+            ]);
+        }
+
+        // Get order by hash or transaction
+        $order = null;
+        $transaction = null;
+
+        if ($orderHash) {
+            $order = \FluentCart\App\Models\Order::query()
+                ->where('uuid', $orderHash)
+                ->first();
+        }
+
+        if ($transactionId) {
+            $transaction = OrderTransaction::query()
+                ->where('id', $transactionId)
+                ->where('payment_method', 'sslcommerz')
+                ->first();
+            
+            if ($transaction && !$order) {
+                $order = $transaction->order;
+            }
+        }
+
+        if (!$order || !$transaction) {
+            wp_send_json([
+                'status' => 'fail',
+                'data' => null,
+                'message' => __('Order or transaction not found.', 'sslcommerz-for-fluent-cart')
+            ]);
+        }
+
+        // Use the processor to initiate payment
+        $paymentInstance = new \FluentCart\App\Services\Payments\PaymentInstance($order);
+        $paymentInstance->setTransaction($transaction);
+        
+        $processor = new Onetime\SslcommerzProcessor();
+        $result = $processor->handleSinglePayment($paymentInstance, [
+            'success_url' => $this->getSuccessUrl($transaction),
+            'cancel_url' => $this->getCancelUrl(),
+        ]);
+
+        if (is_wp_error($result)) {
+            wp_send_json([
+                'status' => 'fail',
+                'data' => null,
+                'message' => $result->get_error_message()
+            ]);
+        }
+
+        $gatewayUrl = Arr::get($result, 'payment_args.checkout_url');
+        $storeLogo = Arr::get($result, 'payment_args.logo', '');
+
+        if (!$gatewayUrl) {
+            wp_send_json([
+                'status' => 'fail',
+                'data' => null,
+                'message' => __('Failed to get payment URL.', 'sslcommerz-for-fluent-cart')
+            ]);
+        }
+
+        // Return in format expected by SSL Commerz embed script
+        wp_send_json([
+            'status' => 'success',
+            'data' => $gatewayUrl,
+            'logo' => $storeLogo
+        ]);
     }
 
     public static function register(): void

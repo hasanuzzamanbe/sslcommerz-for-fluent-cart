@@ -94,5 +94,70 @@ class SslcommerzAPI
         
         return $this->makeApiCall($keys, $data, 'POST');
     }
+
+    /**
+     * Initiate refund via SSL Commerz refund API
+     * 
+     * @param string $bankTranId The transaction ID at Banks End
+     * @param string $refundTransId Unique transaction ID for the refund
+     * @param float $refundAmount Refund amount in decimal format (e.g., 5.50)
+     * @param string $refundRemarks Reason for refund
+     * @param string $mode Payment mode (live or test)
+     * @param string $refeId Optional reference ID
+     * @return array|WP_Error
+     */
+    public function initiateRefund($bankTranId, $refundTransId, $refundAmount, $refundRemarks, $mode = 'live', $refeId = '')
+    {
+        $keys = $this->settings->getApiKeys();
+
+        $refundApi = 'https://securepay.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php';
+
+        if ($mode !== 'live') {
+            $refundApi = 'https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php';
+        }
+
+        $args = [
+            'bank_tran_id'     => $bankTranId,
+            'refund_trans_id'   => $refundTransId,
+            'refund_amount'     => number_format($refundAmount, 2, '.', ''),
+            'refund_remarks'    => $refundRemarks,
+            'format'            => 'json',
+        ];
+
+        if ($refeId) {
+            $args['refe_id'] = $refeId;
+        }
+
+        $keys['api_path'] = $refundApi;
+
+        return $this->makeApiCall($keys, $args, 'GET');
+    }
+
+    /**
+     * Query refund status
+     * 
+     * @param string $refundRefId The refund reference ID returned from initiateRefund
+     * @param string $mode Payment mode (live or test)
+     * @return array|WP_Error
+     */
+    public function queryRefundStatus($refundRefId, $mode = 'live')
+    {
+        $keys = $this->settings->getApiKeys();
+
+        $refundApi = 'https://securepay.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php';
+
+        if ($mode !== 'live') {
+            $refundApi = 'https://sandbox.sslcommerz.com/validator/api/merchantTransIDvalidationAPI.php';
+        }
+
+        $args = [
+            'refund_ref_id' => $refundRefId,
+            'format'        => 'json',
+        ];
+
+        $keys['api_path'] = $refundApi;
+
+        return $this->makeApiCall($keys, $args, 'GET');
+    }
 }
 

@@ -98,17 +98,25 @@ class SslcommerzProcessor
             ]);
         }
 
+        // Get store logo for modal checkout
+        $storeLogo = Arr::get($response, 'storeLogo', '');
+
         $checkoutType = (new SslcommerzSettingsBase())->get('checkout_type');
+        $mode = (new SslcommerzSettingsBase())->getMode();
 
         return [
             'status'       => 'success',
             'nextAction'   => 'sslcommerz',
-            'actionName'   => $checkoutType === 'modal' ? 'modal' : 'redirect',
+            'actionName'   => $checkoutType === 'modal' ? 'custom' : 'redirect',
             'message'      => __('Redirecting to SSL Commerz payment page...', 'sslcommerz-for-fluent-cart'),
             'payment_args' => array_merge($paymentArgs, [
-                'checkout_url'  => $gatewayUrl,
-                'checkout_type' => $checkoutType,
-                'session_key'  => $sessionKey
+                'checkout_url'    => $gatewayUrl,
+                'checkout_type'   => $checkoutType,
+                'payment_mode'    => $mode,
+                'session_key'     => $sessionKey,
+                'transaction_id'  => $transaction->id,
+                'order_hash'      => $order->uuid,
+                'logo'            => $storeLogo
             ])
         ];
     }
