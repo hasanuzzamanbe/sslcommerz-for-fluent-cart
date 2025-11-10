@@ -88,7 +88,11 @@ class SslcommerzGateway extends AbstractPaymentGateway
             'message'      => __('Order info retrieved!', 'sslcommerz-for-fluent-cart'),
             'data'         => [],
             'payment_args' => [
-                'checkout_type' => $this->settings->get('checkout_type')
+                'checkout_type' => $this->settings->get('checkout_type'),
+                'modal_checkout_button_text' => $this->settings->get('modal_checkout_button_text'),
+                'modal_checkout_button_color' => $this->settings->get('modal_checkout_button_color'),
+                'modal_checkout_button_text_color' => $this->settings->get('modal_checkout_button_text_color'),
+                'modal_checkout_button_hover_color' => $this->settings->get('modal_checkout_button_hover_color'),
             ],
         ], 200);
     }
@@ -375,7 +379,31 @@ class SslcommerzGateway extends AbstractPaymentGateway
                     'modal'  => __('Modal Checkout (Popup)', 'sslcommerz-for-fluent-cart')
                 ],
                 'tooltip' => __('Choose how customers will complete their payment.', 'sslcommerz-for-fluent-cart')
-            ]
+            ],
+            'modal_checkout_button_text' => [
+                'value'   => __('Pay Now', 'sslcommerz-for-fluent-cart'),
+                'label'   => __('Modal Checkout Button Text', 'sslcommerz-for-fluent-cart'),
+                'type'    => 'text',
+                'description' => __('Text for the button that opens the modal checkout', 'sslcommerz-for-fluent-cart'),
+            ],
+            'modal_checkout_button_color' => [
+                'value'   => '#0B9E48',
+                'label'   => __('Modal Checkout Button Color', 'sslcommerz-for-fluent-cart'),
+                'type'    => 'color',
+                'description' => __('Button color for the button that opens the modal checkout', 'sslcommerz-for-fluent-cart'),
+            ],
+            'modal_checkout_button_hover_color' => [
+                'value'   => '#098a3d',
+                'label'   => __('Modal Checkout Button Hover Color', 'sslcommerz-for-fluent-cart'),
+                'type'    => 'color',
+                'description' => __('Hover color for the button that opens the modal checkout', 'sslcommerz-for-fluent-cart'),
+            ],
+            'modal_checkout_button_text_color' => [
+                'value'   => '#fff',
+                'label'   => __('Modal Checkout Button Text Color', 'sslcommerz-for-fluent-cart'),
+                'type'    => 'color',
+                'description' => __('Text color for the button that opens the modal checkout', 'sslcommerz-for-fluent-cart'),
+            ],
             // 'webhook_info' => [
             //     'value' => sprintf(
             //         '<div><p><b>%s</b><code class="copyable-content">%s</code></p><p>%s</p></div>',

@@ -36,6 +36,10 @@ class SslcommerzSettingsBase extends BaseGatewaySettings
             'live_store_secret' => '',
             'payment_mode'        => 'test',
             'checkout_type'       => 'hosted',
+            'modal_checkout_button_text' => __('Pay with SSL Commerz', 'sslcommerz-for-fluent-cart'),
+            'modal_checkout_button_color' => '#0B9E48',
+            'modal_checkout_button_text_color' => '#fff',
+            'modal_checkout_button_hover_color' => '#098a3d',
         ];
     }
 

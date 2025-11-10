@@ -88,12 +88,12 @@ class SslcommerzCheckout {
         payNowButton.id = 'sslcommerz-pay-button';
         payNowButton.className = 'sslcommerz-payment-button';
         payNowButton.type = 'button';
-        payNowButton.textContent = this.$t('Pay Now');
+        payNowButton.textContent = this.data?.payment_args?.modal_checkout_button_text;
         payNowButton.style.cssText = `
             width: 100%;
             padding: 12px 24px;
-            background: #0B9E48;
-            color: #fff;
+            background: ${this.data?.payment_args?.modal_checkout_button_color};
+            color: ${this.data?.payment_args?.modal_checkout_button_text_color};
             border: none;
             border-radius: 6px;
             font-size: 16px;
@@ -105,10 +105,10 @@ class SslcommerzCheckout {
 
         // Add hover effect
         payNowButton.addEventListener('mouseenter', () => {
-            payNowButton.style.backgroundColor = '#098a3d';
+            payNowButton.style.backgroundColor = this.data?.payment_args?.modal_checkout_button_hover_color;
         });
         payNowButton.addEventListener('mouseleave', () => {
-            payNowButton.style.backgroundColor = '#0B9E48';
+            payNowButton.style.backgroundColor = this.data?.payment_args?.modal_checkout_button_color
         });
 
         payNowButton.addEventListener('click', async (e) => {
