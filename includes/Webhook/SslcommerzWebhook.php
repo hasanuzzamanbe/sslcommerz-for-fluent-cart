@@ -4,16 +4,20 @@ namespace SslcommerzFluentCart\Webhook;
 
 use FluentCart\App\Helpers\Status;
 use FluentCart\App\Helpers\StatusHelper;
+use FluentCart\App\Models\Order;
 use FluentCart\App\Models\OrderTransaction;
 use FluentCart\Framework\Support\Arr;
+use FluentCart\App\Events\Order\OrderRefund;
 use SslcommerzFluentCart\API\SslcommerzAPI;
 use SslcommerzFluentCart\Settings\SslcommerzSettingsBase;
+use SslcommerzFluentCart\Refund\SslcommerzRefund;
 
 class SslcommerzWebhook
 {
     public function init()
     {
-        // Add any webhook initialization logic here
+        // Register webhook action handlers
+        add_action('fluent_cart/payments/sslcommerz/webhook_refund_processed', [$this, 'handleRefundProcessed'], 10, 1);
     }
 
     /**
@@ -23,6 +27,7 @@ class SslcommerzWebhook
     {
 
         $data = json_decode(file_get_contents('php://input'), true);
+
 
         if (!is_array($data)) {
             $this->sendErrorResponse('Invalid data');
@@ -34,6 +39,7 @@ class SslcommerzWebhook
         $status = Arr::get($data, 'status');
         $amount = Arr::get($data, 'amount');
         $currency = Arr::get($data, 'currency');
+
 
         // Handle test/verification requests (when SSL Commerz tests the endpoint)
         // If no POST data at all, return 200 to indicate endpoint is reachable
@@ -106,6 +112,14 @@ class SslcommerzWebhook
         $amountDifference = abs($transaction->total - $validationAmountCents);
         if ($amountDifference > 1) {
            $this->sendErrorResponse('Amount mismatch');
+        }
+
+        // Check if this is a refund notification
+        $refundStatus = Arr::get($data, 'refund_status');
+        if ($refundStatus && in_array(strtoupper($refundStatus), ['REFUNDED', 'REFUND_INITIATED', 'REFUND_SUCCESS'])) {
+            $this->handleRefundNotification($transaction, $vendorTransaction, $data);
+            $this->sendResponse();
+            return;
         }
 
         $this->handleStatus($transaction, $vendorTransaction, $data);
@@ -230,6 +244,89 @@ class SslcommerzWebhook
     {
         http_response_code(400);
         exit($message);
+    }
+
+    /**
+     * Handle refund notification from SSL Commerz IPN
+     */
+    private function handleRefundNotification($transaction, $vendorTransaction, $postData)
+    {
+        $order = $transaction->order;
+        
+        if (!$order) {
+            fluent_cart_add_log('SSL Commerz Refund Error', 'Order not found for refund notification', 'error', [
+                'transaction_id' => $transaction->id
+            ]);
+            return;
+        }
+
+        // Trigger webhook handler
+        if (has_action('fluent_cart/payments/sslcommerz/webhook_refund_processed')) {
+            do_action('fluent_cart/payments/sslcommerz/webhook_refund_processed', [
+                'refund' => $vendorTransaction,
+                'order' => $order,
+                'transaction' => $transaction,
+                'post_data' => $postData
+            ]);
+        }
+    }
+
+    /**
+     * Handle refund processed webhook
+     */
+    public function handleRefundProcessed($data)
+    {
+        $refund = Arr::get($data, 'refund');
+        $order = Arr::get($data, 'order');
+        $parentTransaction = Arr::get($data, 'transaction');
+        $postData = Arr::get($data, 'post_data', []);
+
+        if (!$parentTransaction || !$order) {
+            return false;
+        }
+
+        // Get refund details
+        $refundRefId = Arr::get($postData, 'refund_ref_id');
+        $refundAmount = Arr::get($postData, 'refund_amount', Arr::get($refund, 'currency_amount', 0));
+        $refundCurrency = Arr::get($postData, 'currency', Arr::get($refund, 'currency_type', $order->currency));
+        
+        // Convert refund amount to cents
+        $refundAmountCents = $this->convertToCents($refundAmount, $refundCurrency);
+
+        // Prepare refund data matching the pattern from other gateways
+        $refundData = [
+            'order_id'           => $order->id,
+            'transaction_type'   => Status::TRANSACTION_TYPE_REFUND,
+            'status'             => Status::TRANSACTION_REFUNDED,
+            'payment_method'     => 'sslcommerz',
+            'payment_mode'       => $parentTransaction->payment_mode,
+            'vendor_charge_id'   => $refundRefId ?: 'REF_' . time(),
+            'total'              => $refundAmountCents,
+            'currency'           => $refundCurrency,
+            'meta'               => [
+                'parent_id'          => $parentTransaction->id,
+                'refund_description' => Arr::get($postData, 'refund_remarks', 'Refund processed'),
+                'refund_source'      => 'webhook',
+                'sslcommerz_refund_data' => $refund
+            ]
+        ];
+
+        $currentCreatedRefund = null;
+        $syncedRefund = SslcommerzRefund::createOrUpdateIpnRefund($refundData, $parentTransaction);
+        
+        if ($syncedRefund && $syncedRefund->wasRecentlyCreated) {
+            $currentCreatedRefund = $syncedRefund;
+        }
+
+        fluent_cart_add_log('SSL Commerz Refund Processed', 'Refund processed via webhook. Ref ID: ' . $refundRefId, 'info', [
+            'module_name' => 'order',
+            'module_id'   => $order->id,
+        ]);
+
+        // Dispatch refund event
+        (new OrderRefund($order, $currentCreatedRefund))->dispatch();
+
+        return true;
     }
 }
 

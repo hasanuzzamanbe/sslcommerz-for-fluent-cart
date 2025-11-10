@@ -404,16 +404,16 @@ class SslcommerzGateway extends AbstractPaymentGateway
                 'type'    => 'color',
                 'description' => __('Text color for the button that opens the modal checkout', 'sslcommerz-for-fluent-cart'),
             ],
-            // 'webhook_info' => [
-            //     'value' => sprintf(
-            //         '<div><p><b>%s</b><code class="copyable-content">%s</code></p><p>%s</p></div>',
-            //         __('IPN/Webhook URL: ', 'sslcommerz-for-fluent-cart'),
-            //         $webhook_url,
-            //         __('Configure this IPN URL in your SSL Commerz Dashboard to receive payment notifications.', 'sslcommerz-for-fluent-cart')
-            //     ),
-            //     'label' => __('IPN Configuration', 'sslcommerz-for-fluent-cart'),
-            //     'type'  => 'html_attr'
-            // ],
+            'webhook_info' => [
+                'value' => sprintf(
+                    '<div><p><b>%s</b><code class="copyable-content">%s</code></p><p>%s</p></div>',
+                    __('IPN/Webhook URL: ', 'sslcommerz-for-fluent-cart'),
+                    $webhook_url,
+                    __('Configure this IPN URL in your SSL Commerz store settings to receive payment notifications.', 'sslcommerz-for-fluent-cart')
+                ),
+                'label' => __('IPN Configuration', 'sslcommerz-for-fluent-cart'),
+                'type'  => 'html_attr'
+            ],
         ];
     }
 
