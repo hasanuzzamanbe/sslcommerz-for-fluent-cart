@@ -14,10 +14,13 @@ class SslcommerzProcessor
      */
     public function handleSinglePayment(PaymentInstance $paymentInstance, $paymentArgs = [])
     {
+
         $order = $paymentInstance->order;
         $transaction = $paymentInstance->transaction;
         $fcCustomer = $paymentInstance->order->customer;
         $billingAddress = $paymentInstance->order->billing_address;
+
+        $this->checkCurrencySupport($transaction->currency);
 
         $settings = new SslcommerzSettingsBase();
         $keys = $settings->getApiKeys();
@@ -32,12 +35,14 @@ class SslcommerzProcessor
         // Prepare webhook URL
         $webhook_url = site_url('?fluent-cart=fct_payment_listener_ipn&method=sslcommerz');
 
+        $category = $this->getProductCategory($order->order_items);
+
         // Prepare payment data for SSL Commerz
         $paymentData = [
             'total_amount'      => $this->formatAmount($transaction->total),
             'currency'          => strtoupper($transaction->currency),
-            'tran_id'           => $transaction->id,
-            'product_category'  => 'FluentCart Order',
+            'tran_id'           => $transaction->uuid,
+            'product_category'  => $category,
             'product_profile'   => 'general',
             'product_name'      => $this->getProductName($order),
             'cus_name'          => $fcCustomer->first_name . ' ' . $fcCustomer->last_name,
@@ -46,7 +51,7 @@ class SslcommerzProcessor
             'cus_add1'          => $billingAddress->address_1 ?: 'Not provided',
             'cus_city'          => $billingAddress->city ?: 'Not provided',
             'cus_country'       => $billingAddress->country ?: 'BD',
-            'cus_postcode'      => $billingAddress->zip ?: '0000',
+            'cus_postcode'      => $billingAddress->postcode ?: '0000',
             'success_url'       => Arr::get($paymentArgs, 'success_url'),
             'fail_url'          => Arr::get($paymentArgs, 'cancel_url'),
             'cancel_url'        => Arr::get($paymentArgs, 'cancel_url'),
@@ -54,13 +59,14 @@ class SslcommerzProcessor
             'shipping_method'   => 'NO',
         ];
 
+
         // Apply filters for customization
         $paymentData = apply_filters('sslcommerz_fc/payment_args', $paymentData, [
             'order'       => $order,
             'transaction' => $transaction
         ]);
 
-        // Initialize payment with SSL Commerz
+
         $api = new SslcommerzAPI();
         $keys['api_path'] = $keys['api_path'] . '/gwprocess/v4/api.php';
         
@@ -70,7 +76,6 @@ class SslcommerzProcessor
             return $response;
         }
 
-        // Check for failed response
         if (Arr::get($response, 'status') === 'FAILED') {
             return new \WP_Error(
                 'sslcommerz_init_error',
@@ -78,7 +83,7 @@ class SslcommerzProcessor
             );
         }
 
-        // Get the gateway URL
+
         $gatewayUrl = Arr::get($response, 'GatewayPageURL') ?: Arr::get($response, 'redirectGatewayURL');
         
         if (!$gatewayUrl) {
@@ -88,7 +93,6 @@ class SslcommerzProcessor
             );
         }
 
-        // Store session key if available
         $sessionKey = Arr::get($response, 'sessionkey');
         if ($sessionKey) {
             $transaction->update([
@@ -98,7 +102,7 @@ class SslcommerzProcessor
             ]);
         }
 
-        // Get store logo for modal checkout
+
         $storeLogo = Arr::get($response, 'storeLogo', '');
 
         $checkoutType = (new SslcommerzSettingsBase())->get('checkout_type');
@@ -107,14 +111,14 @@ class SslcommerzProcessor
         return [
             'status'       => 'success',
             'nextAction'   => 'sslcommerz',
-            'actionName'   => $checkoutType === 'modal' ? 'custom' : 'redirect',
+            'actionName'   => $checkoutType == 'modal' ? 'custom' : 'redirect',
             'message'      => __('Redirecting to SSL Commerz payment page...', 'sslcommerz-for-fluent-cart'),
             'payment_args' => array_merge($paymentArgs, [
                 'checkout_url'    => $gatewayUrl,
                 'checkout_type'   => $checkoutType,
                 'payment_mode'    => $mode,
                 'session_key'     => $sessionKey,
-                'transaction_id'  => $transaction->id,
+                'transaction_hash'  => $transaction->uuid,
                 'order_hash'      => $order->uuid,
                 'logo'            => $storeLogo
             ])
@@ -150,6 +154,42 @@ class SslcommerzProcessor
         }
 
         return $productName;
+    }
+
+    public function checkCurrencySupport($currency)
+    {
+
+        if (!in_array(strtoupper($currency), self::getSslcommerzSupportedCurrency())) {
+            return new \WP_Error(
+                'sslcommerz_currency_error',
+                __('SSL Commerz does not support the currency you are using!', 'sslcommerz-for-fluent-cart')
+            );
+        }
+
+    }
+
+    public static function getSslcommerzSupportedCurrency(): array
+    {
+        return ['BDT', 'USD', 'EUR', 'GBP', 'AUD', 'CAD'];
+    }
+
+
+    public function getProductCategory($orderItems)
+    {
+
+        $category = '';
+
+        foreach ($orderItems as $item) {
+            $categories = $item->product->categories;
+            
+            if (!empty($categories)) {
+                return $categories[0]->name;
+            }
+        }
+
+   
+
+        return __('No specific Category', 'sslcommerz-for-fluent-cart');
     }
 }
 

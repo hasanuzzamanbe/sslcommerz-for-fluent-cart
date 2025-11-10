@@ -26,6 +26,13 @@ class SslcommerzGateway extends AbstractPaymentGateway
             new Settings\SslcommerzSettingsBase(), 
             null // No subscription support
         );
+
+        add_filter('fluent_cart/payment_methods_with_custom_checkout_buttons', function ($methods) {
+            if ($this->settings->get('checkout_type') === 'modal') {
+                $methods[] = 'sslcommerz';
+            }
+            return $methods;
+        });
     }
 
     public function meta(): array
@@ -368,17 +375,17 @@ class SslcommerzGateway extends AbstractPaymentGateway
                     'modal'  => __('Modal Checkout (Popup)', 'sslcommerz-for-fluent-cart')
                 ],
                 'tooltip' => __('Choose how customers will complete their payment.', 'sslcommerz-for-fluent-cart')
-            ],
-            'webhook_info' => [
-                'value' => sprintf(
-                    '<div><p><b>%s</b><code class="copyable-content">%s</code></p><p>%s</p></div>',
-                    __('IPN/Webhook URL: ', 'sslcommerz-for-fluent-cart'),
-                    $webhook_url,
-                    __('Configure this IPN URL in your SSL Commerz Dashboard to receive payment notifications.', 'sslcommerz-for-fluent-cart')
-                ),
-                'label' => __('IPN Configuration', 'sslcommerz-for-fluent-cart'),
-                'type'  => 'html_attr'
-            ],
+            ]
+            // 'webhook_info' => [
+            //     'value' => sprintf(
+            //         '<div><p><b>%s</b><code class="copyable-content">%s</code></p><p>%s</p></div>',
+            //         __('IPN/Webhook URL: ', 'sslcommerz-for-fluent-cart'),
+            //         $webhook_url,
+            //         __('Configure this IPN URL in your SSL Commerz Dashboard to receive payment notifications.', 'sslcommerz-for-fluent-cart')
+            //     ),
+            //     'label' => __('IPN Configuration', 'sslcommerz-for-fluent-cart'),
+            //     'type'  => 'html_attr'
+            // ],
         ];
     }
 

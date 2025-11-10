@@ -32,15 +32,14 @@ class SslcommerzConfirmations
 
         // Check if payment was successful from SSL Commerz redirect
         $status = Arr::get($_POST, 'status');
-        $tranId = Arr::get($_POST, 'tran_id');
         $valId = Arr::get($_POST, 'val_id');
 
-        if (!$status || !$tranId) {
+        if (!$status || !$transactionHash) {
             return;
         }
 
         $transaction = OrderTransaction::query()
-            ->where('id', $tranId)
+            ->where('uuid', $transactionHash)
             ->where('payment_method', 'sslcommerz')
             ->first();
 

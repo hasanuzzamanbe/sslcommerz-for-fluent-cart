@@ -45,6 +45,18 @@ function sslcommerz_fc_check_dependencies() {
             <?php
         });
         return false;
+    } else if (version_compare(FLUENTCART_VERSION, '1.2.5', '<')) {
+        add_action('admin_notices', function() {
+            ?>
+            <div class="notice notice-error">
+                <p>
+                    <strong><?php _e('SSL Commerz for FluentCart', 'sslcommerz-for-fluent-cart'); ?></strong> 
+                    <?php _e('requires FluentCart version 1.2.5 or higher.', 'sslcommerz-for-fluent-cart'); ?>
+                </p>
+            </div>
+            <?php
+        });
+        return false;
     }
     return true;
 }
