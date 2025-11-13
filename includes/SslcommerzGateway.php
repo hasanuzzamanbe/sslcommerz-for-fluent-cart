@@ -218,6 +218,7 @@ class SslcommerzGateway extends AbstractPaymentGateway
             if (is_wp_error($validationResponse)) {
                 return new \WP_Error(
                     'sslcommerz_refund_error',
+                    // translators: %s: Error message from validation API
                     sprintf(__('Failed to fetch transaction details: %s', 'sslcommerz-for-fluent-cart'), $validationResponse->get_error_message())
                 );
             }
@@ -277,6 +278,7 @@ class SslcommerzGateway extends AbstractPaymentGateway
         if ($apiConnect !== 'DONE') {
             $errorReason = Arr::get($refundResponse, 'errorReason', '');
             $errorMessage = sprintf(
+                // translators: %s: API connection status
                 __('SSL Commerz API connection failed: %s', 'sslcommerz-for-fluent-cart'),
                 $apiConnect
             );
@@ -312,6 +314,7 @@ class SslcommerzGateway extends AbstractPaymentGateway
             $errorReason = Arr::get($refundResponse, 'errorReason', __('Refund request failed to initiate.', 'sslcommerz-for-fluent-cart'));
             return new \WP_Error(
                 'sslcommerz_refund_failed',
+                // translators: %s: Error reason for refund failure
                 sprintf(__('Refund failed: %s', 'sslcommerz-for-fluent-cart'), $errorReason)
             );
         }

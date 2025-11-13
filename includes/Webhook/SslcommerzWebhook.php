@@ -17,7 +17,7 @@ class SslcommerzWebhook
     public function init()
     {
         // Register webhook action handlers
-        add_action('fluent_cart/payments/sslcommerz/webhook_refund_processed', [$this, 'handleRefundProcessed'], 10, 1);
+        add_action('sslcommerz_for_fluent_cart/webhook_refund_processed', [$this, 'handleRefundProcessed'], 10, 1);
     }
 
     /**
@@ -243,7 +243,7 @@ class SslcommerzWebhook
     public function sendErrorResponse($message)
     {
         http_response_code(400);
-        exit($message);
+        exit(esc_html($message));
     }
 
     /**
@@ -261,8 +261,8 @@ class SslcommerzWebhook
         }
 
         // Trigger webhook handler
-        if (has_action('fluent_cart/payments/sslcommerz/webhook_refund_processed')) {
-            do_action('fluent_cart/payments/sslcommerz/webhook_refund_processed', [
+        if (has_action('sslcommerz_for_fluent_cart/webhook_refund_processed')) {
+            do_action('sslcommerz_for_fluent_cart/webhook_refund_processed', [
                 'refund' => $vendorTransaction,
                 'order' => $order,
                 'transaction' => $transaction,

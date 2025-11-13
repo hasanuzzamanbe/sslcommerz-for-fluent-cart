@@ -1,0 +1,287 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SSL Commerz for FluentCart\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-12 11:02+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.0; wp-6.8.3; php-8.1.33\n"
+"X-Domain: sslcommerz-for-fluent-cart"
+
+#. Description of the plugin
+msgid ""
+"Accept payments via SSL Commerz in FluentCart - supports one-time payments, "
+"refunds, and multiple payment methods"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:231
+msgid "Bank transaction ID not found. Unable to process refund."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:396
+msgid "Button color for the button that opens the modal checkout"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:378
+msgid "Checkout Type"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:384
+msgid "Choose how customers will complete their payment."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:415
+msgid ""
+"Configure this IPN URL in your SSL Commerz store settings to receive payment "
+"notifications."
+msgstr ""
+
+#. %s: Error message from validation API
+#: includes/SslcommerzGateway.php:222
+#, php-format
+msgid "Failed to fetch transaction details: %s"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:531
+msgid "Failed to get payment URL."
+msgstr ""
+
+#: includes/Onetime/SslcommerzProcessor.php:82
+msgid "Failed to initialize payment"
+msgstr ""
+
+#. Author of the plugin
+msgid "FluentCart"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:381
+msgid "Hosted Checkout (Redirect)"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:402
+msgid "Hover color for the button that opens the modal checkout"
+msgstr ""
+
+#. URI of the plugin
+#. Author URI of the plugin
+msgid "https://fluentcart.com"
+msgstr ""
+
+#: includes/API/SslcommerzAPI.php:81
+msgid "Invalid JSON response from SSL Commerz"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:417
+msgid "IPN Configuration"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:413
+msgid "IPN/Webhook URL: "
+msgstr ""
+
+#: includes/SslcommerzGateway.php:338
+msgid "Live credentials"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:343
+msgid "Live Store ID"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:349
+msgid "Live Store Secret Key"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:382
+msgid "Modal Checkout (Popup)"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:394
+msgid "Modal Checkout Button Color"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:400
+msgid "Modal Checkout Button Hover Color"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:388
+msgid "Modal Checkout Button Text"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:406
+msgid "Modal Checkout Button Text Color"
+msgstr ""
+
+#: includes/Onetime/SslcommerzProcessor.php:192
+msgid "No specific Category"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:88
+msgid "Order info retrieved!"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:473
+msgid "Order information not found."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:502
+msgid "Order or transaction not found."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:148 includes/SslcommerzGateway.php:387
+msgid "Pay Now"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:48
+msgid ""
+"Pay securely with SSL Commerz - Card, Mobile Banking, Internet Banking, and "
+"more"
+msgstr ""
+
+#: includes/Settings/SslcommerzSettingsBase.php:39
+msgid "Pay with SSL Commerz"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:149
+msgid "Place Order"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:438
+msgid "Please provide Live Store ID and Live Store Password"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:430
+msgid "Please provide Test Store ID and Test Store Secret Key"
+msgstr ""
+
+#: sslcommerz-for-fluent-cart.php:105
+msgid "Plugin Activation Error"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:147
+msgid "Processing payment..."
+msgstr ""
+
+#: includes/Onetime/SslcommerzProcessor.php:115
+msgid "Redirecting to SSL Commerz payment page..."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:150
+msgid "Redirecting to SSL Commerz..."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:191
+msgid "Refund amount is required."
+msgstr ""
+
+#. %s: Error reason for refund failure
+#: includes/SslcommerzGateway.php:318
+#, php-format
+msgid "Refund failed: %s"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:310
+msgid "Refund is already being processed."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:314
+msgid "Refund request failed to initiate."
+msgstr ""
+
+#: sslcommerz-for-fluent-cart.php:42
+msgid "requires FluentCart to be installed and activated."
+msgstr ""
+
+#: sslcommerz-for-fluent-cart.php:54
+msgid "requires FluentCart version 1.2.5 or higher."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:43
+msgid "SSL Commerz"
+msgstr ""
+
+#. %s: API connection status
+#: includes/SslcommerzGateway.php:282
+#, php-format
+msgid "SSL Commerz API connection failed: %s"
+msgstr ""
+
+#. %s: HTTP status code
+#: includes/API/SslcommerzAPI.php:70
+#, php-format
+msgid "SSL Commerz API error: HTTP %s"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:107
+#: includes/Onetime/SslcommerzProcessor.php:165
+msgid "SSL Commerz does not support the currency you are using!"
+msgstr ""
+
+#. Name of the plugin
+#: sslcommerz-for-fluent-cart.php:41 sslcommerz-for-fluent-cart.php:53
+msgid "SSL Commerz for FluentCart"
+msgstr ""
+
+#: sslcommerz-for-fluent-cart.php:104
+msgid ""
+"SSL Commerz for FluentCart requires FluentCart to be installed and activated."
+msgstr ""
+
+#: includes/Onetime/SslcommerzProcessor.php:31
+msgid "SSL Commerz payment gateway is not properly configured."
+msgstr ""
+
+#: includes/SslcommerzGateway.php:330
+msgid "Store Mode notice"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:357
+msgid "Test credentials"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:362
+msgid "Test Store ID"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:368
+msgid "Test Store Password"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:408
+msgid "Text color for the button that opens the modal checkout"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:390
+msgid "Text for the button that opens the modal checkout"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:200
+msgid "Transaction validation ID is missing."
+msgstr ""
+
+#: includes/Onetime/SslcommerzProcessor.php:92
+msgid "Unable to get payment URL from SSL Commerz"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:345
+msgid "Your live store ID"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:351
+msgid "Your live store secret key"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:364
+msgid "Your test store ID"
+msgstr ""
+
+#: includes/SslcommerzGateway.php:370
+msgid "Your test store password"
+msgstr ""

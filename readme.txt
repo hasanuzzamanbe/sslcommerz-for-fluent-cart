@@ -1,8 +1,8 @@
 === SSL Commerz for FluentCart ===
-Contributors: hasanuzzamanshamim
+Contributors: hasanuzzamanshamim, wpminers
 Tags: sslcommerz, payment gateway, fluentcart, bangladesh, bdt
 Requires at least: 5.6
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later

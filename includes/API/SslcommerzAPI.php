@@ -66,6 +66,7 @@ class SslcommerzAPI
         if ($statusCode !== 200) {
             return new \WP_Error(
                 'sslcommerz_api_error',
+                // translators: %s: HTTP status code
                 sprintf(__('SSL Commerz API error: HTTP %s', 'sslcommerz-for-fluent-cart'), $statusCode),
                 ['status' => $statusCode]
             );
