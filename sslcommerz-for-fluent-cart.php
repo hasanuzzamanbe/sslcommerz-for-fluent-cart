@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: SSL Commerz for FluentCart
+ * Plugin Name: Bangladeshi Payment Gateway SSLCommerz for FluentCart
  * Plugin URI: https://wpminers.com/plugins
  * Description: Accept payments via SSL Commerz in FluentCart - supports one-time payments, refunds, and multiple payment methods
  * Version: 1.0.0
@@ -32,7 +32,7 @@ function sslcommerz_fc_check_dependencies() {
             ?>
             <div class="notice notice-error">
                 <p>
-                    <strong><?php esc_html_e('SSL Commerz for FluentCart', 'sslcommerz-for-fluent-cart'); ?></strong> 
+                    <strong><?php esc_html_e('Bangladeshi Payment Gateway SSLCommerz for FluentCart', 'sslcommerz-for-fluent-cart'); ?></strong> 
                     <?php esc_html_e('requires FluentCart to be installed and activated.', 'sslcommerz-for-fluent-cart'); ?>
                 </p>
             </div>

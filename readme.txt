@@ -1,4 +1,4 @@
-=== SSL Commerz for FluentCart ===
+=== Bangladeshi Payment Gateway SSLCommerz for FluentCart ===
 Contributors: hasanuzzamanshamim, wpminers
 Tags: sslcommerz, payment gateway, fluentcart, bangladesh, bdt
 Requires at least: 5.6
@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Accept payments via SSL Commerz in FluentCart - supports one-time payments, multiple payment methods, and automatic payment verification.
+Accept payments via Bangladeshi Payment Gateway SSLCommerz for FluentCart - supports one-time payments, multiple payment methods, and automatic payment verification.
 
 == Description ==
 

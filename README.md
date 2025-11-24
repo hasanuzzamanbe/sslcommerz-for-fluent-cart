@@ -1,4 +1,4 @@
-# SSL Commerz for FluentCart
+# Bangladeshi Payment Gateway SSLCommerz for FluentCart
 
 A WordPress plugin that integrates SSL Commerz payment gateway with FluentCart.
 
